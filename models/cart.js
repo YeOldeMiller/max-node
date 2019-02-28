@@ -20,7 +20,25 @@ module.exports = class Cart {
         cart.products.push({ id, qty: 1 });
       }
       cart.total += price;
-      fs.writeFile(p, JSON.stringify(cart), err => console.log(err));
+      fs.writeFile(p, JSON.stringify(cart), err => {
+        if(err) console.log(err)
+      });
+    });
+  }
+
+  static removeItem(id, price) {
+    getCartFromFile(cart => {
+      if(!cart.products.length) return;
+      const product = cart.products.find(p => p.id === id);
+      if(product.qty === 1) {
+        cart.products = cart.products.filter(p => p.id !== id);
+      } else {
+        product.qty--;
+      }
+      cart.total -= price;
+      fs.writeFile(p, JSON.stringify(cart), err => {
+        if(err) console.log(err)
+      });
     });
   }
 
@@ -28,11 +46,18 @@ module.exports = class Cart {
     getCartFromFile(cart => {
       if(!cart.products.length) return;
       const qty = cart.products.find(p => p.id === id).qty || 0;
-      if(qty > 0) {
-        cart.products = cart.products.filter(p => p.id !== id);
-        cart.total -= price * qty;
-        fs.writeFile(p, JSON.stringify(cart), err => console.log(err));
-      }
+      if(!qty) return;
+      cart.products = cart.products.filter(p => p.id !== id);
+      cart.total -= price * qty;
+      fs.writeFile(p, JSON.stringify(cart), err => {
+        if(err) console.log(err)
+      });
+    });
+  }
+
+  static getCart(cb) {
+    getCartFromFile(cart => {
+      cb(cart);
     });
   }
 };
