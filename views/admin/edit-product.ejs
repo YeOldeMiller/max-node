@@ -1,0 +1,31 @@
+<%- include('../includes/header.ejs') %>
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/product.css">
+</head>
+
+<body>
+  <%- include('../includes/nav.ejs') %>
+
+  <main>
+    <form class="product-form" action="/admin/<%= locals.editMode ? 'edit' : 'add' %>-product" method="POST">
+      <div class="form-control">
+        <label for="name">Name</label>
+        <input type="text" name="product[name]" id="name" value="<%= locals.editMode && product.name %>">
+      </div>
+      <div class="form-control">
+        <label for="imageUrl">Image URL</label>
+        <input type="text" name="product[imageUrl]" id="imageUrl" value="<%= locals.editMode && product.imageUrl %>">
+      </div>
+      <div class="form-control">
+        <label for="price">Price</label>
+        <input type="number" name="product[price]" id="price" step="0.01" value="<%= locals.editMode && product.price %>">
+      </div>
+      <div class="form-control">
+        <label for="description">Description</label>
+        <textarea name="product[description]" id="description" rows="5"><%= locals.editMode && product.description %></textarea>
+      </div>
+      <% if(locals.editMode) { %><input type="hidden" name="product[id]" value="<%= product.id %>"><% } %>
+      <button class="btn" type="submit"><%= locals.editMode ? 'Update' : 'Add' %> Product</button>
+    </form>
+  </main>
+<%- include('../includes/footer.ejs') %>
