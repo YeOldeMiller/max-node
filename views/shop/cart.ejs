@@ -6,11 +6,11 @@
     <main>
       <% if(products.length) { %>
         <ul>
-          <% products.forEach(({ productData, qty }) => { %>
+          <% products.forEach(product => { %>
             <li>
-              <p><%= productData.name %> (<%= qty %>)</p>
+              <p><%= product.name %> (<%= product.cartItem.qty %>)</p>
               <form action="/remove-cart-item" method="POST">
-                <input type="hidden" name="productId" value="<%= productData.id %>">
+                <input type="hidden" name="productId" value="<%= product.id %>">
                 <button type="submit" class="btn">Remove from Cart</button>
               </form>
             </li>
