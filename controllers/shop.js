@@ -1,9 +1,9 @@
 const Product = require('../models/product');
 
 exports.getIndex = (req, res) => {
-  Product.findAll()
+  Product.fetchAll()
     .then(products => {
-      res.render('shop/product-list',
+      res.render('shop/index',
         {
           products,
           pageTitle: 'All Products',
@@ -14,7 +14,7 @@ exports.getIndex = (req, res) => {
 };
 
 exports.getProducts = (req, res) => {
-  Product.findAll()
+  Product.fetchAll()
     .then(products => {
       res.render('shop/product-list',
         {
@@ -27,7 +27,7 @@ exports.getProducts = (req, res) => {
 };
 
 exports.getProductDetails = (req, res) => {
-  Product.findByPk(req.params.productId)
+  Product.findById(req.params.productId)
     .then(product => res.render('shop/product-details',
       {
         product,
@@ -40,7 +40,6 @@ exports.getProductDetails = (req, res) => {
 
 exports.getCart = (req, res) => {
   req.user.getCart()
-    .then(cart => cart.getProducts())
     .then(products => res.render('shop/cart',
       {
         products,
@@ -53,34 +52,19 @@ exports.getCart = (req, res) => {
 };
 
 exports.postRemoveCartItem = (req, res) => {
-  const id = req.body.productId;
-  req.user.getCart()
-    .then(cart => cart.getProducts({ where: { id } }))
-    .then(([ product ]) => product.cartItem.destroy())
+  req.user.removeFromCart(req.body.productId)
     .then(() => res.redirect('/cart'))
     .catch(console.log);
 };
 
-exports.postCart = async (req, res) => {
-  try {
-    const id = req.body.productId,
-      cart = await req.user.getCart();
-    let [ product ] = await cart.getProducts({ where: { id } });
-    let qty = 1;
-    if(product) {
-      qty += product.cartItem.qty;
-    } else {
-      product = await Product.findByPk(req.body.productId);
-    }
-    await cart.addProduct(product, { through: { qty } });
-    res.redirect('/cart');
-  } catch(err) {
-    console.log(err);
-  }
+exports.postCart = (req, res) => {
+  Product.findById(req.body.productId)
+    .then(product => req.user.addToCart(product))
+    .then(() => res.redirect('/cart'));
 };
 
 exports.getOrders = (req, res) => {
-  req.user.getOrders({ include: [ 'products' ] })
+  req.user.getOrders()
     .then(orders => res.render('shop/orders',
       {
         orders,
@@ -92,27 +76,17 @@ exports.getOrders = (req, res) => {
   .catch(console.log);
 };
 
-// exports.getCheckout = (req, res) => {
-//   res.render('shop/checkout',
-//     {
-//       path: '/checkout',
-//       pageTitle: 'Checkout'
-//     }
-//   );
-// };
+// // exports.getCheckout = (req, res) => {
+// //   res.render('shop/checkout',
+// //     {
+// //       path: '/checkout',
+// //       pageTitle: 'Checkout'
+// //     }
+// //   );
+// // };
 
-exports.postOrder = async (req, res) => {
-  try {
-    const cart = await req.user.getCart(),
-      products = await cart.getProducts(),
-      order = await req.user.createOrder();
-    await order.addProducts(products.map(product => {
-      product.orderItem = { qty: product.cartItem.qty };
-      return product;
-    }));
-    await cart.setProducts(null);
-    res.redirect('/orders');
-  } catch(err) {
-    console.log(err);
-  }
+exports.postOrder = (req, res) => {
+  req.user.addOrder()
+    .then(res.redirect('/orders'))
+    .catch(console.log);
 }

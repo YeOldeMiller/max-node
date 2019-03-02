@@ -1,8 +1,7 @@
-const Product = require('../models/product'),
-  Cart = require('../models/cart');
+const Product = require('../models/product');
 
 exports.getProducts = (req, res) => {
-  Product.findAll()
+  Product.fetchAll()
     .then(products => {
       res.render('admin/products',
         {
@@ -26,8 +25,8 @@ exports.getAddProduct = (req, res) => {
 
 exports.getEditProduct = (req, res) => {
   const editMode = req.query.edit === 'true';
-  req.user.getProducts({ where: { id: req.params.productId } })
-    .then(([ product ]) => {
+  Product.findById(req.params.productId)
+    .then(product => {
       res.render('admin/edit-product',
         { 
           product,
@@ -43,21 +42,21 @@ exports.getEditProduct = (req, res) => {
     });
 };
 
-exports.postAddProduct = (req, res) => {
-  req.user.createProduct(req.body.product)
-    .then(res.redirect('/admin/products'))
-    .catch(console.log);
-};
+// exports.postAddProduct = (req, res) => {
+//   const product = new Product(req.body.product);
+//   product.save()
+//     .then(res.redirect('/admin/products'))
+//     .catch(console.log);
+// };
 
 exports.postEditProduct = (req, res) => {
-  Product.update(req.body.product, { where: { id: req.body.product.id, userId: req.user.id } })
-    .then(() => res.redirect('/admin/products'))
+  const product = new Product(req.body.product, req.user._id);
+  product.save()
+    .then(res.redirect('/admin/products'))
     .catch(console.log);
 }
 
 exports.postDeleteProduct = (req, res) => {
-  Product.destroy({ where: { id: req.body.productId } })
-    .then(() => {
-      res.redirect('/admin/products');
-    });
+  Product.deleteById(req.body.productId)
+    .then(res.redirect('/admin/products'));
 };
