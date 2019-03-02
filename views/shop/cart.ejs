@@ -1,14 +1,16 @@
 <%- include('../includes/header.ejs') %>
+  <link rel="stylesheet" href="/css/cart.css">
   </head>
 
   <body>
     <%- include('../includes/nav.ejs') %>
     <main>
       <% if(products.length) { %>
-        <ul>
+        <ul class="cart__item-list">
           <% products.forEach(product => { %>
-            <li>
-              <p><%= product.name %> (<%= product.cartItem.qty %>)</p>
+            <li class="cart__item">
+              <h1><%= product.name %></h1>
+              <h2><%= product.cartItem.qty %></h2>
               <form action="/remove-cart-item" method="POST">
                 <input type="hidden" name="productId" value="<%= product.id %>">
                 <button type="submit" class="btn">Remove from Cart</button>
@@ -16,8 +18,16 @@
             </li>
           <% }); %>
         </ul>
+        <hr>
+        <div class="centered">
+          <form action="/create-order" method="POST">
+            <button class="btn">Place Order</button>
+          </form>
+        </div>
       <% } else { %>
-        <h1>Your cart is empty</h1>
+        <div class="centered">
+          <h1>Your cart is empty</h1>
+        </div>
       <% } %>
     </main>
     <%- include('../includes/footer.ejs') %>

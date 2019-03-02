@@ -1,6 +1,4 @@
-const Product = require('../models/product'),
-  Cart = require('../models/cart');
-
+const Product = require('../models/product');
 
 exports.getIndex = (req, res) => {
   Product.findAll()
@@ -54,13 +52,14 @@ exports.getCart = (req, res) => {
     .catch(console.log);
 };
 
-// exports.postRemoveItem = (req, res) => {
-//   const id = req.body.productId;
-//   Product.findById(id, product => {
-//     Cart.addProduct(id, product.price);
-//   });
-//   res.redirect('/cart');
-// };
+exports.postRemoveCartItem = (req, res) => {
+  const id = req.body.productId;
+  req.user.getCart()
+    .then(cart => cart.getProducts({ where: { id } }))
+    .then(([ product ]) => product.cartItem.destroy())
+    .then(() => res.redirect('/cart'))
+    .catch(console.log);
+};
 
 exports.postCart = async (req, res) => {
   try {
@@ -81,19 +80,39 @@ exports.postCart = async (req, res) => {
 };
 
 exports.getOrders = (req, res) => {
-  res.render('shop/orders',
-    {
-      path: '/orders',
-      pageTitle: 'Your Orders'
-    }
-  );
+  req.user.getOrders({ include: [ 'products' ] })
+    .then(orders => res.render('shop/orders',
+      {
+        orders,
+        path: '/orders',
+        pageTitle: 'Your Orders'
+      }
+    )
+  )
+  .catch(console.log);
 };
 
-exports.getCheckout = (req, res) => {
-  res.render('shop/checkout',
-    {
-      path: '/checkout',
-      pageTitle: 'Checkout'
-    }
-  );
-};
+// exports.getCheckout = (req, res) => {
+//   res.render('shop/checkout',
+//     {
+//       path: '/checkout',
+//       pageTitle: 'Checkout'
+//     }
+//   );
+// };
+
+exports.postOrder = async (req, res) => {
+  try {
+    const cart = await req.user.getCart(),
+      products = await cart.getProducts(),
+      order = await req.user.createOrder();
+    await order.addProducts(products.map(product => {
+      product.orderItem = { qty: product.cartItem.qty };
+      return product;
+    }));
+    await cart.setProducts(null);
+    res.redirect('/orders');
+  } catch(err) {
+    console.log(err);
+  }
+}

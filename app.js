@@ -12,16 +12,21 @@ const sequelize = require('./util/db'),
   Product = require('./models/product'),
   User = require('./models/user'),
   Cart = require('./models/cart'),
-  CartItem = require('./models/cart-item');
+  CartItem = require('./models/cart-item'),
+  Order = require('./models/order'),
+  OrderItem = require('./models/order-item');
 
-// Product.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
+Product.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
 User.hasMany(Product);
-// Cart.belongsTo(User);
+Cart.belongsTo(User);
 User.hasOne(Cart);
-// CartItem.belongsTo(Cart, { constraints: true, onDelete: 'CASCADE' });
+CartItem.belongsTo(Cart, { constraints: true, onDelete: 'CASCADE' });
 Cart.hasMany(CartItem);
 Cart.belongsToMany(Product, { through: CartItem });
 Product.belongsToMany(Cart, { through: CartItem });
+Order.belongsTo(User);
+User.hasMany(Order);
+Order.belongsToMany(Product, { through: OrderItem });
 
 app.set('view engine', 'ejs');
 
@@ -40,8 +45,7 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-// sequelize.sync({ force: true })
-sequelize.sync()
+sequelize.sync({ force: false })
   .then(() => User.findByPk(1))
   .then(user => {
     if(user) return user;
