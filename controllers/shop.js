@@ -8,7 +8,8 @@ exports.getIndex = (req, res) => {
         {
           products,
           pageTitle: 'All Products',
-          path: '/'
+          path: '/',
+          auth: req.session.isLoggedIn
         });
       })
     .catch(console.log);
@@ -21,7 +22,8 @@ exports.getProducts = (req, res) => {
         {
           products,
           pageTitle: 'All Products',
-          path: '/products'
+          path: '/products',
+          auth: req.session.isLoggedIn
         });
       })
     .catch(console.log);
@@ -33,7 +35,8 @@ exports.getProductDetails = (req, res) => {
       {
         product,
         pageTitle: product.name,
-        path: '/products'
+        path: '/products',
+        auth: req.session.isLoggedIn
       }
     ))
     .catch(console.log);
@@ -46,7 +49,8 @@ exports.getCart = (req, res) => {
       {
         products: user.cart.items,
         path: '/cart',
-        pageTitle: 'Your Cart'
+        pageTitle: 'Your Cart',
+        auth: req.session.isLoggedIn
       }
     ))
     .catch(console.log);
@@ -66,12 +70,13 @@ exports.postCart = (req, res) => {
 };
 
 exports.getOrders = (req, res) => {
-  Order.find({ 'user.userId': req.user._id })
+  Order.find({ 'user.userId': req.session.user._id })
     .then(orders => res.render('shop/orders',
       {
         orders,
         path: '/orders',
-        pageTitle: 'Your Orders'
+        pageTitle: 'Your Orders',
+        auth: req.session.isLoggedIn
       }
     )
   )
@@ -86,8 +91,8 @@ exports.postOrder = async (req, res) => {
         { quantity: i.quantity, product: { ...i.product._doc } }
       )),
       user: {
-        userId: req.user,
-        username: req.user.username
+        userId: req.session.user,
+        username: req.session.user.username
       }
     })
     await order.save();

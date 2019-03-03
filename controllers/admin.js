@@ -7,7 +7,8 @@ exports.getProducts = (req, res) => {
         {
           products,
           path: '/admin/products',
-          pageTitle: 'Product Manager'
+          pageTitle: 'Product Manager',
+          auth: req.session.isLoggedIn
         }
       );
     })
@@ -18,7 +19,8 @@ exports.getAddProduct = (req, res) => {
   res.render('admin/edit-product',
     { 
       pageTitle: 'Add Product',
-      path: '/admin/add-product'
+      path: '/admin/add-product',
+      auth: req.session.isLoggedIn
     }
   );
 };
@@ -32,7 +34,8 @@ exports.getEditProduct = (req, res) => {
           product,
           pageTitle: 'Edit Product',
           path: '/admin/edit-product',
-          editMode
+          editMode,
+          auth: req.session.isLoggedIn
         }
       );
     })
@@ -43,7 +46,7 @@ exports.getEditProduct = (req, res) => {
 };
 
 exports.postAddProduct = (req, res) => {
-  req.body.product.createdBy = req.user;
+  req.body.product.createdBy = req.session.user;
   const product = new Product(req.body.product);
   product.save()
     .then(() => res.redirect('/admin/products'))
