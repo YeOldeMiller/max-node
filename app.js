@@ -5,7 +5,8 @@ const express = require('express'),
   bodyParser = require('body-parser'),
   mongoose = require('mongoose'),
   MongoDBStore = require('connect-mongodb-session')(session),
-  csrf = require('csurf');
+  csrf = require('csurf'),
+  flash = require('connect-flash');
 
 const MONGODB_URI = 'mongodb+srv://max-node-app:mXxCRasakB426nfP@cluster0-yqoow.mongodb.net/shop?retryWrites=true';
 
@@ -14,8 +15,8 @@ const app = express(),
     uri: MONGODB_URI,
     collection: 'sessions'
   }),
-  csrfProtection = csrf(),
-  flash = require('connect-flash');
+  csrfProtection = csrf();
+  
 
 const adminRoutes = require('./routes/admin'),
   shopRoutes = require('./routes/shop'),

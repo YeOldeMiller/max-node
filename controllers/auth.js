@@ -1,6 +1,12 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs'),
+  { createTransport } = require('nodemailer'),
+  sendgridTransport = require('nodemailer-sendgrid-transport');
 
 const User = require('../models/user');
+
+const transporter = createTransport(sendgridTransport({
+  auth: { api_key: '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'}
+}));
 
 exports.getLogin = (req, res) => {
   res.render('auth/login', {
@@ -53,6 +59,12 @@ exports.postSignup = async (req, res) => {
     });
     await user.save();
     res.redirect('/login');
+    transporter.sendMail({
+      to: email,
+      from: 'shop@max-node.com',
+      subject: 'Account created',
+      html: '<h1>You successfully signed up</h1>'
+    });
   } catch(err) {
     console.log(err);
   }
