@@ -13,8 +13,8 @@
             <li class="orders__item">
               <h1>Order - # <%= order._id %></h1>
                 <ul class="orders__products">
-                  <% order.items.forEach(item => { %>
-                    <li class="orders__products-item"><%= item.name %> (<%= item.qty %>)</li>
+                  <% order.products.forEach(({ product, quantity }) => { %>
+                    <li class="orders__products-item"><%= product.name %> (<%= quantity %>)</li>
                   <% }); %>
                 </ul>
             </li>

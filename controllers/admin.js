@@ -1,7 +1,7 @@
 const Product = require('../models/product');
 
 exports.getProducts = (req, res) => {
-  Product.fetchAll()
+  Product.find()
     .then(products => {
       res.render('admin/products',
         {
@@ -42,21 +42,22 @@ exports.getEditProduct = (req, res) => {
     });
 };
 
-// exports.postAddProduct = (req, res) => {
-//   const product = new Product(req.body.product);
-//   product.save()
-//     .then(res.redirect('/admin/products'))
-//     .catch(console.log);
-// };
+exports.postAddProduct = (req, res) => {
+  req.body.product.createdBy = req.user;
+  const product = new Product(req.body.product);
+  product.save()
+    .then(() => res.redirect('/admin/products'))
+    .catch(console.log);
+};
 
 exports.postEditProduct = (req, res) => {
-  const product = new Product(req.body.product, req.user._id);
-  product.save()
-    .then(res.redirect('/admin/products'))
+  Product.findByIdAndUpdate(req.body.productId, req.body.product)
+    .then(() => res.redirect('/admin/products'))
     .catch(console.log);
 }
 
 exports.postDeleteProduct = (req, res) => {
-  Product.deleteById(req.body.productId)
-    .then(res.redirect('/admin/products'));
+  Product.findByIdAndRemove(req.body.productId)
+    .then(() => res.redirect('/admin/products'))
+    .catch(console.log);
 };

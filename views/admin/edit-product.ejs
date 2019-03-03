@@ -24,7 +24,7 @@
         <label for="description">Description</label>
         <textarea name="product[description]" id="description" rows="5"><%= locals.editMode && product.description %></textarea>
       </div>
-      <% if(locals.editMode) { %><input type="hidden" name="product[_id]" value="<%= product._id %>"><% } %>
+      <% if(locals.editMode) { %><input type="hidden" name="productId" value="<%= product._id %>"><% } %>
       <button class="btn" type="submit"><%= locals.editMode ? 'Update' : 'Add' %> Product</button>
     </form>
   </main>

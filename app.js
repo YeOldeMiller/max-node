@@ -2,14 +2,14 @@ const path = require('path');
 
 const express = require('express'),
   app = express(),
-  bodyParser = require('body-parser');
+  bodyParser = require('body-parser'),
+  mongoose = require('mongoose');
 
 const adminRoutes = require('./routes/admin'),
   shopRoutes = require('./routes/shop'),
   errorController = require('./controllers/error');
 
-const { mongoConnect } = require('./util/db'),
-  User = require('./models/user');
+const User = require('./models/user');
 
 app.set('view engine', 'ejs');
 
@@ -17,8 +17,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
-  User.findById('5c7ac000520a350880f9b23b').then(user => {
-    req.user = new User(user, user.cart);
+  User.findById('5c7b6bb49bfac937dcacff37').then(user => {
+    req.user = user;
     next();
   })
   .catch(console.log);
@@ -30,5 +30,11 @@ app.use(shopRoutes);
 app.use(errorController.get404);
 
 
-mongoConnect(() => app.listen(3000));
+mongoose.connect('mongodb+srv://max-node-app:mXxCRasakB426nfP@cluster0-yqoow.mongodb.net/shop?retryWrites=true',
+  {
+    useNewUrlParser: true,
+    useFindAndModify: false
+  })
+    .then(() => app.listen(3000))
+    .catch(console.log);
 
