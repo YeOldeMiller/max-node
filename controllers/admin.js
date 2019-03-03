@@ -7,8 +7,7 @@ exports.getProducts = (req, res) => {
         {
           products,
           path: '/admin/products',
-          pageTitle: 'Product Manager',
-          auth: req.session.isLoggedIn
+          pageTitle: 'Product Manager'
         }
       );
     })
@@ -19,8 +18,7 @@ exports.getAddProduct = (req, res) => {
   res.render('admin/edit-product',
     { 
       pageTitle: 'Add Product',
-      path: '/admin/add-product',
-      auth: req.session.isLoggedIn
+      path: '/admin/add-product'
     }
   );
 };
@@ -34,8 +32,7 @@ exports.getEditProduct = (req, res) => {
           product,
           pageTitle: 'Edit Product',
           path: '/admin/edit-product',
-          editMode,
-          auth: req.session.isLoggedIn
+          editMode
         }
       );
     })

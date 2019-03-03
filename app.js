@@ -4,7 +4,8 @@ const express = require('express'),
   session = require('express-session'),
   bodyParser = require('body-parser'),
   mongoose = require('mongoose'),
-  MongoDBStore = require('connect-mongodb-session')(session);
+  MongoDBStore = require('connect-mongodb-session')(session),
+  csrf = require('csurf');
 
 const MONGODB_URI = 'mongodb+srv://max-node-app:mXxCRasakB426nfP@cluster0-yqoow.mongodb.net/shop?retryWrites=true';
 
@@ -12,7 +13,9 @@ const app = express(),
   store = new MongoDBStore({
     uri: MONGODB_URI,
     collection: 'sessions'
-  });
+  }),
+  csrfProtection = csrf(),
+  flash = require('connect-flash');
 
 const adminRoutes = require('./routes/admin'),
   shopRoutes = require('./routes/shop'),
@@ -32,6 +35,9 @@ app.use(session({
   store
 }));
 
+app.use(csrfProtection);
+app.use(flash());
+
 app.use((req, res, next) => {
   if(!req.session.user) return next();
   User.findById(req.session.user._id)
@@ -40,7 +46,14 @@ app.use((req, res, next) => {
       next()
     })
     .catch(console.log);
-})
+});
+
+app.use((req, res, next) => {
+  res.locals.auth = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  res.locals.errorMsg = req.flash('error');
+  next();
+});
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);

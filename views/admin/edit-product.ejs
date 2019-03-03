@@ -25,6 +25,7 @@
         <textarea name="product[description]" id="description" rows="5"><%= locals.editMode && product.description %></textarea>
       </div>
       <% if(locals.editMode) { %><input type="hidden" name="productId" value="<%= product._id %>"><% } %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <button class="btn" type="submit"><%= locals.editMode ? 'Update' : 'Add' %> Product</button>
     </form>
   </main>

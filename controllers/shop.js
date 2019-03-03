@@ -4,55 +4,43 @@ const Product = require('../models/product'),
 exports.getIndex = (req, res) => {
   Product.find()
     .then(products => {
-      res.render('shop/index',
-        {
-          products,
-          pageTitle: 'All Products',
-          path: '/',
-          auth: req.session.isLoggedIn
-        });
-      })
+      res.render('shop/index', {
+        products,
+        pageTitle: 'All Products',
+        path: '/'
+      });
+    })
     .catch(console.log);
 };
 
 exports.getProducts = (req, res) => {
   Product.find()
-    .then(products => {
-      res.render('shop/product-list',
-        {
-          products,
-          pageTitle: 'All Products',
-          path: '/products',
-          auth: req.session.isLoggedIn
-        });
-      })
+    .then(products => res.render('shop/product-list', {
+        products,
+        pageTitle: 'All Products',
+        path: '/products'
+      }))
     .catch(console.log);
 };
 
 exports.getProductDetails = (req, res) => {
   Product.findById(req.params.productId)
-    .then(product => res.render('shop/product-details',
-      {
-        product,
-        pageTitle: product.name,
-        path: '/products',
-        auth: req.session.isLoggedIn
-      }
-    ))
+    .then(product => res.render('shop/product-details', {
+      product,
+      pageTitle: product.name,
+      path: '/products'
+    }))
     .catch(console.log);
 };
 
 exports.getCart = (req, res) => {
   req.user.populate('cart.items.product')
     .execPopulate()
-    .then(user => res.render('shop/cart',
-      {
-        products: user.cart.items,
-        path: '/cart',
-        pageTitle: 'Your Cart',
-        auth: req.session.isLoggedIn
-      }
-    ))
+    .then(user => res.render('shop/cart', {
+      products: user.cart.items,
+      path: '/cart',
+      pageTitle: 'Your Cart'
+    }))
     .catch(console.log);
 };
 
@@ -71,16 +59,12 @@ exports.postCart = (req, res) => {
 
 exports.getOrders = (req, res) => {
   Order.find({ 'user.userId': req.session.user._id })
-    .then(orders => res.render('shop/orders',
-      {
-        orders,
-        path: '/orders',
-        pageTitle: 'Your Orders',
-        auth: req.session.isLoggedIn
-      }
-    )
-  )
-  .catch(console.log);
+    .then(orders => res.render('shop/orders', {
+      orders,
+      path: '/orders',
+      pageTitle: 'Your Orders'
+    }))
+    .catch(console.log);
 };
 
 exports.postOrder = async (req, res) => {
@@ -92,7 +76,7 @@ exports.postOrder = async (req, res) => {
       )),
       user: {
         userId: req.session.user,
-        username: req.session.user.username
+        email: req.session.user.email
       }
     })
     await order.save();

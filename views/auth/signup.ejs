@@ -8,7 +8,7 @@
 
   <main>
     <%- include('../includes/flash-msg.ejs', { errorMsg }) %>
-    <form class="login-form" action="/login" method="POST">
+    <form class="login-form" action="/signup" method="POST">
       <div class="form-control">
         <label for="email">Email</label>
         <input type="email" name="user[email]" id="email">
@@ -17,8 +17,12 @@
         <label for="password">Password</label>
         <input type="password" name="user[password]" id="password">
       </div>
+      <div class="form-control">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" name="user[confirmPassword]" id="confirmPassword">
+      </div>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <button class="btn" type="submit">Log in</button>
+      <button class="btn" type="submit">Sign up</button>
     </form>
   </main>
 <%- include('../includes/footer.ejs') %>
