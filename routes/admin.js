@@ -7,7 +7,7 @@ const adminController = require('../controllers/admin'),
 
 const productValidation = [
   check('product[name]', 'Invalid name').trim().isString().isLength({ min: 3 }),
-  check('product[imageUrl]', 'Invalid URL').isURL(),
+  // check('product[imageUrl]', 'Invalid URL').isURL(),
   check('product[price]', 'Invalid price').isFloat(),
   check('product[description]', 'Invalid description').trim().isLength({ min: 5, max: 200 })
 ];

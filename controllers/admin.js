@@ -40,18 +40,21 @@ exports.getEditProduct = (req, res) => {
 };
 
 exports.postAddProduct = (req, res, next) => {
-  errors = validationResult(req);
-  if(!errors.isEmpty()) {
+  const errors = validationResult(req),
+    errorMsg = errors.array().map(err => err.msg);
+  if(!req.file) errorMsg.push('File format is not supported');
+  if(errorMsg.length) {
     return res.status(422).render('admin/edit-product', { 
       product: req.body.product,
       pageTitle: 'Add Product',
-      path: '/admin/edit-product',
-      errorMsg: errors.array().map(err => err.msg),
+      path: '/admin/add-product',
+      errorMsg,
       validationErrors: errors.array(),
       hasError: true
     });
   }
   req.body.product.createdBy = req.session.user;
+  req.body.product.imageUrl = req.file.path.replace('\\', '/');
   const product = new Product(req.body.product);
   product.save()
     .then(() => res.redirect('/admin/products'))
@@ -60,7 +63,7 @@ exports.postAddProduct = (req, res, next) => {
 
 exports.postEditProduct = async (req, res, next) => {
   try {
-    errors = validationResult(req);
+    const errors = validationResult(req);
     if(!errors.isEmpty()) {
       return res.status(422).render('admin/edit-product', { 
         product: req.body.product,
@@ -72,15 +75,15 @@ exports.postEditProduct = async (req, res, next) => {
         hasError: true
       });
     }
-    const { name, imageUrl, description, price } = req.body.product;
+    const { name, image, description, price } = req.body.product;
     const product = await Product.findById(req.body.productId);
     if(product.createdBy.toString() !== req.session.user._id.toString()) {
       req.flash('error', 'You do not have permission to edit this item');
     } else {
       product.name = name;
-      product.imageUrl = imageUrl,
       product.description = description;
       product.price = price;
+      if(image) product.imageUrl = image.path.replace('\\', '/');
       await product.save();
     }
     res.redirect('/admin/products');

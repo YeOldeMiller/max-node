@@ -4,6 +4,7 @@ const path = require('path');
 const express = require('express'),
   session = require('express-session'),
   bodyParser = require('body-parser'),
+  multer = require('multer'),
   mongoose = require('mongoose'),
   MongoDBStore = require('connect-mongodb-session')(session),
   csrf = require('csurf'),
@@ -20,14 +21,30 @@ const app = express(),
 const adminRoutes = require('./routes/admin'),
   shopRoutes = require('./routes/shop'),
   authRoutes = require('./routes/auth'),
-  errorController = require('./controllers/error');
+  errorController = require('./controllers/error'),
+  User = require('./models/user');
 
-const User = require('./models/user');
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images');
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString().replace(/:/g, '-') + '-' + file.originalname);
+  }
+}),
+  fileFilter = (req, file, cb) => {
+    if(['image/png', 'image/jpg', 'image/jpeg'].includes(file.mimetype)) {
+      cb(null, true);
+    }
+    cb(null, false);
+  }
 
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(multer({ storage: fileStorage, fileFilter }).single('image'));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(session({
   secret: 'Do androids dream of electric sheep?',
   resave: false,

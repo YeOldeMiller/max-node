@@ -8,7 +8,7 @@
 
   <main>
     <%- include('../includes/flash-msg.ejs') %>
-    <form class="product-form" action="/admin/<%= locals.editMode ? 'edit' : 'add' %>-product" method="POST">
+    <form class="product-form" action="/admin/<%= locals.editMode ? 'edit' : 'add' %>-product" method="POST" enctype="multipart/form-data">
       <div class="form-control">
         <label for="name">Name</label>
         <input
@@ -19,7 +19,7 @@
           value="<%= (locals.editMode || locals.hasError) && product.name %>"
         >
       </div>
-      <div class="form-control">
+      <!--<div class="form-control">
         <label for="imageUrl">Image URL</label>
         <input
           class="<%= locals.validationErrors && validationErrors.find(e => e.param === 'product.imageUrl') && 'invalid' %>"
@@ -27,6 +27,14 @@
           name="product[imageUrl]"
           id="imageUrl"
           value="<%= (locals.editMode || locals.hasError) && product.imageUrl %>"
+        >
+      </div>-->
+      <div class="form-control">
+        <label for="image">Image</label>
+        <input
+          type="file"
+          name="image"
+          id="image"
         >
       </div>
       <div class="form-control">

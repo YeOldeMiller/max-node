@@ -12,5 +12,6 @@ router.post('/cart', isAuthenticated, shopController.postCart);
 router.post('/remove-cart-item', isAuthenticated, shopController.postRemoveCartItem);
 router.get('/orders', isAuthenticated, shopController.getOrders);
 router.post('/create-order', isAuthenticated, shopController.postOrder);
+router.get('/orders/:orderId', isAuthenticated, shopController.getInvoice);
 
 module.exports = router;

@@ -1,3 +1,6 @@
+const fs = require('fs'),
+  path = require('path');
+
 const Product = require('../models/product'),
   Order = require('../models/order');
 
@@ -85,4 +88,20 @@ exports.postOrder = async (req, res, next) => {
   } catch(err) {
     next(err);
   }
-}
+};
+
+exports.getInvoice = async (req, res, next) => {
+  const orderId = req.params.orderId,
+    invoiceName = 'invoice-' + orderId + '.pdf',
+    order = await Order.findById(orderId);
+  if(!order) return next(new Error('No order found'));
+  if(order.user.userId.toString() !== req.user._id.toString()) {
+    return next(new Error('Unauthorized'));
+  }
+  fs.readFile(path.join('data', invoiceName), (err, data) => {
+    if(err) return next(err);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${invoiceName}"`);
+    res.send(data);
+  });
+};
