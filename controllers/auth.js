@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs'),
 const User = require('../models/user');
 
 const transporter = createTransport(sendgridTransport({
-  auth: { api_key: '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'}
+  auth: { api_key: process.env.SENDGRID_API_KEY }
 }));
 
 exports.getLogin = (req, res) => {
