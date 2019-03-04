@@ -1,0 +1,22 @@
+<%- include('../includes/header.ejs') %>
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+
+<body>
+  <%- include('../includes/nav.ejs') %>
+
+  <main>
+    <%- include('../includes/flash-msg.ejs', { errorMsg }) %>
+    <form class="login-form" action="/set-pass" method="POST">
+      <div class="form-control">
+        <label for="password">Password</label>
+        <input type="password" name="user[password]" id="password">
+      </div>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="user[_id]" value="<%= userId %>">
+      <input type="hidden" name="user[resetToken]" value="<%= resetToken %>">
+      <button class="btn" type="submit">Reset password</button>
+    </form>
+  </main>
+<%- include('../includes/footer.ejs') %></div>

@@ -7,19 +7,37 @@
   <%- include('../includes/nav.ejs') %>
 
   <main>
-    <%- include('../includes/flash-msg.ejs', { errorMsg }) %>
+    <%- include('../includes/flash-msg.ejs') %>
     <form class="login-form" action="/signup" method="POST">
       <div class="form-control">
         <label for="email">Email</label>
-        <input type="email" name="user[email]" id="email">
+        <input
+          class="<%= locals.validationErrors && validationErrors.find(e => e.param === 'user.email') && 'invalid' %>"
+          type="email"
+          name="user[email]"
+          id="email"
+          value="<%= locals.prevInput && prevInput.email %>"
+        >
       </div>
       <div class="form-control">
         <label for="password">Password</label>
-        <input type="password" name="user[password]" id="password">
+        <input
+          class="<%= locals.validationErrors && validationErrors.find(e => e.param === 'user.password') && 'invalid' %>"
+          type="password"
+          name="user[password]"
+          id="password"
+          value="<%= locals.prevInput && prevInput.password %>"
+        >
       </div>
       <div class="form-control">
         <label for="confirmPassword">Confirm Password</label>
-        <input type="password" name="user[confirmPassword]" id="confirmPassword">
+        <input
+          class="<%= locals.validationErrors && validationErrors.find(e => e.param === 'user.confirmPassword') && 'invalid' %>"
+          type="password"
+          name="user[confirmPassword]"
+          id="confirmPassword"
+          value="<%= locals.prevInput && prevInput.confirmPassword %>"
+        >
       </div>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <button class="btn" type="submit">Sign up</button>

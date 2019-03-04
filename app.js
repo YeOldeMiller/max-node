@@ -9,11 +9,11 @@ const express = require('express'),
   csrf = require('csurf'),
   flash = require('connect-flash');
 
-const MONGODB_URI = 'mongodb+srv://max-node-app:mXxCRasakB426nfP@cluster0-yqoow.mongodb.net/shop?retryWrites=true';
+// const MONGODB_URI = 'mongodb+srv://max-node-app:nXLUFaniM5w8sIYT@cluster0-yqoow.mongodb.net/shop?retryWrites=true';
 
 const app = express(),
   store = new MongoDBStore({
-    uri: MONGODB_URI,
+    uri: process.env.MONGODB_URI,
     collection: 'sessions'
   }),
   csrfProtection = csrf();
@@ -64,7 +64,7 @@ app.use(authRoutes);
 app.use(errorController.get404);
 
 
-mongoose.connect(MONGODB_URI,
+mongoose.connect(process.env.MONGODB_URI,
   {
     useNewUrlParser: true,
     useFindAndModify: false

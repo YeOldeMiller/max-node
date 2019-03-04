@@ -6,6 +6,7 @@
     <%- include('../includes/nav.ejs') %>
 
       <main>
+        <%- include('../includes/flash-msg.ejs', { errorMsg }) %>
         <% if (products.length > 0) { %>
           <div class="grid">
             <% for (let product of products) { %>
@@ -39,7 +40,7 @@
               <% } %>
           </div>
           <% } else { %>
-            <h1>No Products Found!</h1>
+            <div class="centered"><h1>No Products Found!</h1></div>
             <% } %>
       </main>
       <%- include('../includes/footer.ejs') %>

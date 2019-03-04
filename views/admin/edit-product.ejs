@@ -7,22 +7,47 @@
   <%- include('../includes/nav.ejs') %>
 
   <main>
+    <%- include('../includes/flash-msg.ejs') %>
     <form class="product-form" action="/admin/<%= locals.editMode ? 'edit' : 'add' %>-product" method="POST">
       <div class="form-control">
         <label for="name">Name</label>
-        <input type="text" name="product[name]" id="name" value="<%= locals.editMode && product.name %>">
+        <input
+          class="<%= locals.validationErrors && validationErrors.find(e => e.param === 'product.name') && 'invalid' %>"
+          type="text"
+          name="product[name]"
+          id="name"
+          value="<%= (locals.editMode || locals.hasError) && product.name %>"
+        >
       </div>
       <div class="form-control">
         <label for="imageUrl">Image URL</label>
-        <input type="text" name="product[imageUrl]" id="imageUrl" value="<%= locals.editMode && product.imageUrl %>">
+        <input
+          class="<%= locals.validationErrors && validationErrors.find(e => e.param === 'product.imageUrl') && 'invalid' %>"
+          type="text"
+          name="product[imageUrl]"
+          id="imageUrl"
+          value="<%= (locals.editMode || locals.hasError) && product.imageUrl %>"
+        >
       </div>
       <div class="form-control">
         <label for="price">Price</label>
-        <input type="number" name="product[price]" id="price" step="0.01" value="<%= locals.editMode && product.price %>">
+        <input
+          class="<%= locals.validationErrors && validationErrors.find(e => e.param === 'product.price') && 'invalid' %>"
+          type="number"
+          name="product[price]"
+          id="price" step="0.01"
+          value="<%= (locals.editMode || locals.hasError) && product.price %>"
+        >
       </div>
       <div class="form-control">
         <label for="description">Description</label>
-        <textarea name="product[description]" id="description" rows="5"><%= locals.editMode && product.description %></textarea>
+        <textarea
+          class="<%= locals.validationErrors && validationErrors.find(e => e.param === 'product.description') && 'invalid' %>"
+          name="product[description]"
+          id="description"
+          rows="5"
+        ><%= (locals.editMode || locals.hasError) && product.description %>
+        </textarea>
       </div>
       <% if(locals.editMode) { %><input type="hidden" name="productId" value="<%= product._id %>"><% } %>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">

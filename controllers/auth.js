@@ -1,6 +1,9 @@
+const crypto = require('crypto');
+
 const bcrypt = require('bcryptjs'),
   { createTransport } = require('nodemailer'),
-  sendgridTransport = require('nodemailer-sendgrid-transport');
+  sendgridTransport = require('nodemailer-sendgrid-transport'),
+  { validationResult } = require('express-validator/check');
 
 const User = require('../models/user');
 
@@ -18,7 +21,17 @@ exports.getLogin = (req, res) => {
 exports.postLogin = async (req, res) => {
   try {
     const { email, password } = req.body.user,
-      user = await User.findOne({ email });
+      errors = validationResult(req);
+    if(!errors.isEmpty()) {
+      return res.status(422).render('auth/login', {
+        path: '/login',
+        pageTitle: 'Log in',
+        errorMsg: errors.array().map(err => err.msg),
+        validationErrors: errors.array(),
+        prevInput: req.body.user
+      });
+    }
+    const user = await User.findOne({ email });
     if(user && await bcrypt.compare(password, user.password)) {
       req.session.isLoggedIn = true;
       req.session.user = user;
@@ -47,10 +60,16 @@ exports.getSignup = (req, res) => {
 
 exports.postSignup = async (req, res) => {
   try {
-    const { email, password } = req.body.user;
-    if(await User.findOne({ email })) {
-      req.flash('error', 'Email address already in use');
-      return res.redirect('/signup');
+    const { email, password } = req.body.user,
+      errors = validationResult(req);
+    if(!errors.isEmpty()) {
+      return res.status(422).render('auth/signup', {
+        path: '/signup',
+        pageTitle: 'Sign up',
+        errorMsg: errors.array().map(err => err.msg),
+        validationErrors: errors.array(),
+        prevInput: req.body.user,
+      });
     }
     const user = new User({
       email,
@@ -68,4 +87,70 @@ exports.postSignup = async (req, res) => {
   } catch(err) {
     console.log(err);
   }
-}
+};
+
+exports.getReset = (req, res) => {
+  res.render('auth/reset', {
+    path: '/login',
+    pageTitle: 'Reset password'
+  });
+};
+
+exports.postReset = (req, res) => {
+  crypto.randomBytes(32, async (err, buffer) => {
+    if(err) {
+      console.log(err);
+      return res.redirect('/reset');
+    }
+    try{
+      const user = await User.findOne({ email: req.body.user.email });
+      if(!user) {
+        req.flash('error', 'Account not found');
+        return res.redirect('/reset');
+      }
+      user.resetToken = buffer.toString('hex');
+      user.resetTokenExpiration = Date.now() + 3600000;
+      await user.save();
+      res.redirect('/');
+      console.log(`http://localhost:3000/reset/${user.resetToken}`);
+      transporter.sendMail({
+        to: user.email,
+        from: 'shop@max-node.com',
+        subject: 'Password reset',
+        html: `<p>You requested a password reset</p>
+        <p> Click this <a href="http://localhost:3000/reset/${user.resetToken}">link</a> to set a new password</p>`
+      });
+    } catch(err) {
+      console.log(err);
+    }
+  });
+};
+
+exports.getSetPass = async (req, res) => {
+  try {
+    const resetToken = req.params.token,
+      user = await User.findOne({ resetToken, resetTokenExpiration: { $gt: Date.now() } });
+    res.render('auth/set-pass', {
+      path: '/set-pass',
+      pageTitle: 'Set new password',
+      userId: user._id.toString(),
+      resetToken
+    });
+  } catch(err) {
+    console.log(err);
+  }
+};
+
+exports.postSetPass = async (req, res) => {
+  try {
+    const { password, _id, resetToken } = req.body.user,
+      user = await User.findOne({ _id, resetToken, resetTokenExpiration: { $gt: Date.now() } });
+    user.password = await bcrypt.hash(password, 12);
+    user.resetToken = undefined;
+    user.resetTokenExpiration = undefined;
+    await user.save();
+    res.redirect('/login');
+  } catch(err) {
+    console.log(err);
+  }
+};
