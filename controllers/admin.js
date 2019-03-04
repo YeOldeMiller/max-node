@@ -2,7 +2,7 @@ const { validationResult } = require('express-validator/check');
 
 const Product = require('../models/product');
 
-exports.getProducts = (req, res) => {
+exports.getProducts = (req, res, next) => {
   Product.find({ createdBy: req.session.user._id })
     .then(products => {
       res.render('admin/products',
@@ -13,7 +13,7 @@ exports.getProducts = (req, res) => {
         }
       );
     })
-    .catch(console.log);
+    .catch(next);
 };
 
 exports.getAddProduct = (req, res) => {
@@ -36,13 +36,10 @@ exports.getEditProduct = (req, res) => {
         editMode
       });
     })
-    .catch(err => {
-      console.log(err);
-      res.redirect('/admin/products');
-    });
+    .catch(res.redirect('/admin/products'));
 };
 
-exports.postAddProduct = (req, res) => {
+exports.postAddProduct = (req, res, next) => {
   errors = validationResult(req);
   if(!errors.isEmpty()) {
     return res.status(422).render('admin/edit-product', { 
@@ -58,10 +55,10 @@ exports.postAddProduct = (req, res) => {
   const product = new Product(req.body.product);
   product.save()
     .then(() => res.redirect('/admin/products'))
-    .catch(console.log);
+    .catch(next);
 };
 
-exports.postEditProduct = async (req, res) => {
+exports.postEditProduct = async (req, res, next) => {
   try {
     errors = validationResult(req);
     if(!errors.isEmpty()) {
@@ -88,12 +85,12 @@ exports.postEditProduct = async (req, res) => {
     }
     res.redirect('/admin/products');
   } catch(err) {
-    console.log(err);
+    next(err);
   }
 }
 
-exports.postDeleteProduct = (req, res) => {
+exports.postDeleteProduct = (req, res, next) => {
   Product.deleteOne({ _id: req.body.productId, createdBy: req.session.user._id })
     .then(() => res.redirect('/admin/products'))
-    .catch(console.log);
+    .catch(next);
 };

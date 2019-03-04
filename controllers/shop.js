@@ -1,7 +1,7 @@
 const Product = require('../models/product'),
   Order = require('../models/order');
 
-exports.getIndex = (req, res) => {
+exports.getIndex = (req, res, next) => {
   Product.find()
     .then(products => {
       res.render('shop/index', {
@@ -10,30 +10,30 @@ exports.getIndex = (req, res) => {
         path: '/'
       });
     })
-    .catch(console.log);
+    .catch(next);
 };
 
-exports.getProducts = (req, res) => {
+exports.getProducts = (req, res, next) => {
   Product.find()
     .then(products => res.render('shop/product-list', {
         products,
         pageTitle: 'All Products',
         path: '/products'
       }))
-    .catch(console.log);
+    .catch(next);
 };
 
-exports.getProductDetails = (req, res) => {
+exports.getProductDetails = (req, res, next) => {
   Product.findById(req.params.productId)
     .then(product => res.render('shop/product-details', {
       product,
       pageTitle: product.name,
       path: '/products'
     }))
-    .catch(console.log);
+    .catch(next);
 };
 
-exports.getCart = (req, res) => {
+exports.getCart = (req, res, next) => {
   req.user.populate('cart.items.product')
     .execPopulate()
     .then(user => res.render('shop/cart', {
@@ -41,33 +41,33 @@ exports.getCart = (req, res) => {
       path: '/cart',
       pageTitle: 'Your Cart'
     }))
-    .catch(console.log);
+    .catch(next);
 };
 
-exports.postRemoveCartItem = (req, res) => {
+exports.postRemoveCartItem = (req, res, next) => {
   req.user.removeFromCart(req.body.productId)
     .then(() => res.redirect('/cart'))
-    .catch(console.log);
+    .catch(next);
 };
 
-exports.postCart = (req, res) => {
+exports.postCart = (req, res, next) => {
   Product.findById(req.body.productId)
     .then(product => req.user.addToCart(product))
     .then(() => res.redirect('/cart'))
-    .catch(console.log);
+    .catch(next);
 };
 
-exports.getOrders = (req, res) => {
+exports.getOrders = (req, res, next) => {
   Order.find({ 'user.userId': req.session.user._id })
     .then(orders => res.render('shop/orders', {
       orders,
       path: '/orders',
       pageTitle: 'Your Orders'
     }))
-    .catch(console.log);
+    .catch(next);
 };
 
-exports.postOrder = async (req, res) => {
+exports.postOrder = async (req, res, next) => {
   try {
     const user = await req.user.populate('cart.items.product').execPopulate();
     const order = new Order({
@@ -83,6 +83,6 @@ exports.postOrder = async (req, res) => {
     await req.user.clearCart();
     res.redirect('/orders');
   } catch(err) {
-    console.log(err);
+    next(err);
   }
 }

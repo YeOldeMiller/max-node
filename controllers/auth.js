@@ -18,7 +18,7 @@ exports.getLogin = (req, res) => {
   });
 };
 
-exports.postLogin = async (req, res) => {
+exports.postLogin = async (req, res, next) => {
   try {
     const { email, password } = req.body.user,
       errors = validationResult(req);
@@ -43,7 +43,7 @@ exports.postLogin = async (req, res) => {
     req.flash('error', 'Invalid email or password');
     res.redirect('/login');
   } catch(err) {
-    console.log(err);
+    next(err);
   }
 }
 
@@ -58,7 +58,7 @@ exports.getSignup = (req, res) => {
   });
 };
 
-exports.postSignup = async (req, res) => {
+exports.postSignup = async (req, res, next) => {
   try {
     const { email, password } = req.body.user,
       errors = validationResult(req);
@@ -85,7 +85,7 @@ exports.postSignup = async (req, res) => {
       html: '<h1>You successfully signed up</h1>'
     });
   } catch(err) {
-    console.log(err);
+    next(err);
   }
 };
 
@@ -96,10 +96,9 @@ exports.getReset = (req, res) => {
   });
 };
 
-exports.postReset = (req, res) => {
+exports.postReset = (req, res, next) => {
   crypto.randomBytes(32, async (err, buffer) => {
     if(err) {
-      console.log(err);
       return res.redirect('/reset');
     }
     try{
@@ -112,7 +111,6 @@ exports.postReset = (req, res) => {
       user.resetTokenExpiration = Date.now() + 3600000;
       await user.save();
       res.redirect('/');
-      console.log(`http://localhost:3000/reset/${user.resetToken}`);
       transporter.sendMail({
         to: user.email,
         from: 'shop@max-node.com',
@@ -121,12 +119,12 @@ exports.postReset = (req, res) => {
         <p> Click this <a href="http://localhost:3000/reset/${user.resetToken}">link</a> to set a new password</p>`
       });
     } catch(err) {
-      console.log(err);
+      next(err);
     }
   });
 };
 
-exports.getSetPass = async (req, res) => {
+exports.getSetPass = async (req, res, next) => {
   try {
     const resetToken = req.params.token,
       user = await User.findOne({ resetToken, resetTokenExpiration: { $gt: Date.now() } });
@@ -137,11 +135,11 @@ exports.getSetPass = async (req, res) => {
       resetToken
     });
   } catch(err) {
-    console.log(err);
+    next(err);
   }
 };
 
-exports.postSetPass = async (req, res) => {
+exports.postSetPass = async (req, res, next) => {
   try {
     const { password, _id, resetToken } = req.body.user,
       user = await User.findOne({ _id, resetToken, resetTokenExpiration: { $gt: Date.now() } });
@@ -151,6 +149,6 @@ exports.postSetPass = async (req, res) => {
     await user.save();
     res.redirect('/login');
   } catch(err) {
-    console.log(err);
+    next(err);
   }
 };

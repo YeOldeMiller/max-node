@@ -9,8 +9,6 @@ const express = require('express'),
   csrf = require('csurf'),
   flash = require('connect-flash');
 
-// const MONGODB_URI = 'mongodb+srv://max-node-app:nXLUFaniM5w8sIYT@cluster0-yqoow.mongodb.net/shop?retryWrites=true';
-
 const app = express(),
   store = new MongoDBStore({
     uri: process.env.MONGODB_URI,
@@ -40,18 +38,6 @@ app.use(session({
 app.use(csrfProtection);
 app.use(flash());
 
-app.use((req, res, next) => {
-  if(!req.session.user) return next();
-  User.findById(req.session.user._id)
-    .then(user => {
-      if(!user) return next();
-      req.user = user;
-      next()
-    })
-    .catch(err => {
-      throw new Error(err);
-    });
-});
 
 app.use((req, res, next) => {
   res.locals.auth = req.session.isLoggedIn;
@@ -60,12 +46,26 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  if(!req.session.user) return next();
+  User.findById(req.session.user._id)
+    .then(user => {
+      if(!user) return next();
+      req.user = user;
+      next()
+    })
+    .catch(next);
+});
+
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
 app.use('/500', errorController.get500);
 app.use(errorController.get404);
+app.use((error, req, res, next) => {
+  res.redirect('/500');
+});
 
 
 mongoose.connect(process.env.MONGODB_URI,
@@ -73,6 +73,6 @@ mongoose.connect(process.env.MONGODB_URI,
     useNewUrlParser: true,
     useFindAndModify: false
   })
-    .then(() => app.listen(3000))
+    .then(app.listen(3000))
     .catch(console.log);
 
