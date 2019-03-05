@@ -98,14 +98,26 @@ exports.postEditProduct = async (req, res, next) => {
   }
 }
 
-exports.postDeleteProduct = async (req, res, next) => {
+// exports.postDeleteProduct = async (req, res, next) => {
+//   try {
+//     const product = await Product.findById(req.body.productId);
+//     if(!product) throw new Error('Product not found');
+//     fs.unlink(product.imageUrl, err => err && console.log(err))
+//     await Product.deleteOne({ _id: req.body.productId, createdBy: req.user._id })
+//     res.redirect('/admin/products');
+//   } catch(err) {
+//     next(err);
+//   }
+// };
+
+exports.deleteProduct = async (req, res, next) => {
   try {
-    const product = await Product.findById(req.body.productId);
+    const product = await Product.findById(req.params.productId);
     if(!product) throw new Error('Product not found');
     fs.unlink(product.imageUrl, err => err && console.log(err))
-    await Product.deleteOne({ _id: req.body.productId, createdBy: req.user._id })
-    res.redirect('/admin/products');
+    await Product.deleteOne({ _id: req.params.productId, createdBy: req.user._id });
+    res.status(200).json({ message: 'Product deleted' });
   } catch(err) {
-    next(err);
+    res.status(500).json({ message: 'Could not delete product' });
   }
 };
