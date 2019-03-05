@@ -1,7 +1,8 @@
 const fs = require('fs'),
   path = require('path');
 
-const PDFDocument = require('pdfkit');
+const PDFDocument = require('pdfkit'),
+  stripe = require("stripe")(process.env.STRIPE_SECRET);
 
 const Product = require('../models/product'),
   Order = require('../models/order');
@@ -86,19 +87,44 @@ exports.getOrders = (req, res, next) => {
     .catch(next);
 };
 
-exports.postOrder = async (req, res, next) => {
-  try {
-    const user = await req.user.populate('cart.items.product').execPopulate();
-    const order = new Order({
-      products: user.cart.items.map(i => (
-        { quantity: i.quantity, product: { ...i.product._doc } }
-      )),
-      user: {
-        userId: req.session.user,
-        email: req.session.user.email
-      }
+exports.getCheckout = (req, res, next) => {
+  req.user.populate('cart.items.product')
+    .execPopulate()
+    .then(user => {
+      const products = user.cart.items,
+        total = products.reduce((acc, cur) => acc + cur.product.price, 0);
+      res.render('shop/checkout', {
+        path: '/checkout',
+        pageTitle: 'Checkout',
+        products,
+        total
+      });
     })
-    await order.save();
+    .catch(next);
+};
+
+exports.postCheckout = async (req, res, next) => {
+  try {
+    const user = await req.user.populate('cart.items.product').execPopulate(),
+      total = user.cart.items.reduce((acc, cur) => acc + cur.product.price, 0),
+      token = req.body.stripeToken,
+      order = new Order({
+        products: user.cart.items.map(i => (
+          { quantity: i.quantity, product: { ...i.product._doc } }
+        )),
+        user: {
+          userId: req.session.user,
+          email: req.session.user.email
+        }
+      });
+    const { _id } = await order.save();
+    const charge = await stripe.charges.create({
+      amount: total * 100,
+      currency: 'usd',
+      description: 'Demo Order',
+      source: token,
+      metadata: { order_id: _id.toString() }
+    });
     await req.user.clearCart();
     res.redirect('/orders');
   } catch(err) {
