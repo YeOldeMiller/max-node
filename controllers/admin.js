@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 const { validationResult } = require('express-validator/check');
 
 const Product = require('../models/product');
@@ -36,7 +38,7 @@ exports.getEditProduct = (req, res) => {
         editMode
       });
     })
-    .catch(res.redirect('/admin/products'));
+    .catch(() => res.redirect('/admin/products'));
 };
 
 exports.postAddProduct = (req, res, next) => {
@@ -75,7 +77,8 @@ exports.postEditProduct = async (req, res, next) => {
         hasError: true
       });
     }
-    const { name, image, description, price } = req.body.product;
+    const { name, description, price } = req.body.product,
+      image = req.file;
     const product = await Product.findById(req.body.productId);
     if(product.createdBy.toString() !== req.session.user._id.toString()) {
       req.flash('error', 'You do not have permission to edit this item');
@@ -83,7 +86,10 @@ exports.postEditProduct = async (req, res, next) => {
       product.name = name;
       product.description = description;
       product.price = price;
-      if(image) product.imageUrl = image.path.replace('\\', '/');
+      if(image) {
+        fs.unlink(product.imageUrl, err => err && console.log(err));
+        product.imageUrl = image.path.replace('\\', '/');
+      }
       await product.save();
     }
     res.redirect('/admin/products');
@@ -92,8 +98,14 @@ exports.postEditProduct = async (req, res, next) => {
   }
 }
 
-exports.postDeleteProduct = (req, res, next) => {
-  Product.deleteOne({ _id: req.body.productId, createdBy: req.session.user._id })
-    .then(() => res.redirect('/admin/products'))
-    .catch(next);
+exports.postDeleteProduct = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.body.productId);
+    if(!product) throw new Error('Product not found');
+    fs.unlink(product.imageUrl, err => err && console.log(err))
+    await Product.deleteOne({ _id: req.body.productId, createdBy: req.user._id })
+    res.redirect('/admin/products');
+  } catch(err) {
+    next(err);
+  }
 };
